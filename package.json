@@ -1,0 +1,21 @@
+{
+  "name": "webshop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruldiaz/webshop.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ruldiaz/webshop/issues"
+  },
+  "homepage": "https://github.com/ruldiaz/webshop#readme"
+}
