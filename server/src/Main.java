@@ -1,14 +1,10 @@
 import com.mongodb.client.MongoClient;
-import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpExchange;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import models.Product;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -20,30 +16,37 @@ public class Main {
         try (MongoClient mongoClient = MongoDBConnector.connect()) {
             logger.info("Connected to MongoDB successfully.");
 
+            // Perform MongoDB operations
+            performMongoDBOperations();
+
             // Start the HTTP server
-            startHttpServer();
+            HttpServerHandler.startServer(4567);
 
         } catch (Exception e) {
             logger.error("Failed to connect to MongoDB: {}", e.getMessage());
         }
     }
 
-    private static void startHttpServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(4567), 0);
-        server.createContext("/", new MyHandler());
-        server.setExecutor(null); // creates a default executor
-        server.start();
-        logger.info("HTTP Server started on port 4567");
-    }
+    private static void performMongoDBOperations() {
+        try (MongoClient mongoClient = MongoDBConnector.connect()) {
+            MongoDatabase database = mongoClient.getDatabase("Product");
+            MongoCollection<Document> collection = database.getCollection("products");
 
-    static class MyHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-            String response = "API is running!";
-            t.sendResponseHeaders(200, response.length());
-            try (OutputStream os = t.getResponseBody()) {
-                os.write(response.getBytes());
-            }
+            // Create a product instance
+            Product product = new Product();
+            product.setName("Laptop");
+            product.setPrice(999.99);
+            product.setCategory("Electronics");
+
+            // Convert the product to a Document and insert it into the collection
+            collection.insertOne(product.toDocument());
+
+            // Find all documents, convert them to Product instances, and print
+            collection.find().forEach(document ->
+                    System.out.println("Product: " + Product.fromDocument(document)));
+
+        } catch (Exception e) {
+            logger.error("Failed to perform MongoDB operations: {}", e.getMessage());
         }
     }
 }
